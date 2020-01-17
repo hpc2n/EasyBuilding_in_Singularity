@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+# Must be called as /bin/bash eb-build-and-update-spider-cache
+# Otherwise /hpc2n/eb/software/lmod/lmod/init/profile will get confused
+# and assume that it is geing called by /bin/sh
+# That then results in update_lmod_system_cache_files failing.
+
+if [ -n "$EBVERSIONEASYBUILD" ]; then
+    saved_eb_version="/$EBVERSIONEASYBUILD"
+else
+    saved_eb_version=""
+fi
+
+. /hpc2n/eb/software/lmod/lmod/init/profile
+
+module use /hpc2n/eb/modules/all/Core
+module purge > /dev/null 2>&1
+if [ "$saved_eb_version" = "/develop" ]; then
+    if [ -z "$EBUSER" ]; then
+        echo "ERROR: Muset set EBUSER before using the /develop version"
+        exit 1
+    fi
+    module use $HOME/${EBUSER}/eb-develop/modules
+    module --ignore_cache add EasyBuild-develop eb_builder/develop
+    ebcmd=${EBROOTEASYBUILD}/easybuild-framework/eb
+else
+    module --ignore_cache add EasyBuild$saved_eb_version eb_builder/default
+    ebcmd=${EBROOTEASYBUILD}/bin/eb
+fi
+
+PATH=$PATH:/lap/slurm/bin
+
+# Setup PKG_CONFIG_PATH so EB can find the minimal set of OS installed pkgconfigs
+# On second thought I don't think we want this at all...
+#syspkgconfpath="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
+#if [ -n "$PKG_CONFIG_PATH" ]; then
+#    PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$syspkgconfpath"
+#else
+#    PKG_CONFIG_PATH=$syspkgconfpath
+#fi
+#export PKG_PATH_CONFIG
+
+if [ -n "$*" ]; then
+    $ebcmd "$@"
+    ret=$?
+else
+    echo "Only updating Lmod spider cache"
+    ret=0
+fi
+
+if [ $ret -eq 0 ]; then
+    module purge > /dev/null 2>&1
+    module --ignore_cache add lmod
+    ret=1
+    cnt=0
+    lockdir="/hpc2n/eb/software/lmod/moduleData/lockdir"
+    while [ $ret -ne 0 -a $cnt -lt 10 ]; do
+        mkdir $lockdir 2>/dev/null
+        lret=$?
+        if [ $lret -eq 0 ]; then
+            update_lmod_system_cache_files $MODULEPATH
+            ret=$?
+            rmdir $lockdir
+        else
+            ret=$lret
+        fi
+	cnt=$((cnt + 1))
+	sleep 10
+    done
+    if [ $lret -ne 0 ]; then
+        echo "Failed to create $lockdir, please check if something went wrong with another build."
+    elif [ $ret -ne 0 ]; then
+        echo "Something went wrong with update_lmod_system_cache_files."
+    fi
+    ret=0
+fi
+exit $ret
