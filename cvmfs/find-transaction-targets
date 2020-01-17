@@ -1,0 +1,81 @@
+#!/usr/bin/perl
+#
+# create list of directories to sync in a cvmfs transaction for ebsw.hpc2n.umu.se
+# Uses module file modification times.
+# Only prints the commands to perform, doesn't actually do them.
+
+$master_dir = "/export/ebswbuild/master";
+
+@sync_bases = ('software', 'modules/all');
+$sync_target = '/cvmfs/ebsw.hpc2n.umu.se';
+$rsync_cmd = 'cvmfs_rsync';
+
+chdir($master_dir);
+
+opendir($dh, $master_dir);
+while(readdir $dh) {
+    next if /^\.$/ || /^\.\.$/;
+    if (-d "$master_dir/$_/modules/all") {
+        push @archs, $_;
+    } else {
+        push @others, $_;
+    }
+}
+closedir($dh);
+
+if (! -e "$sync_target/.last_transaction.started") {
+    print "if [ ! -e $sync_target/.last_transaction.started ]; then\n";
+    print "  touch $sync_target/.last_transaction.started\n";
+    print "fi\n";
+} else {
+    die "Transaction already in progress";
+}
+
+foreach $arch (@archs) {
+    open(T, "find $arch/modules/all -newer $sync_target/.last_transaction -type f -name *.lua|");
+    while (<T>) {
+        chomp;
+        s|$arch/modules/all/||g;
+        s|\.lua$||;
+        $sync{$arch}{dir}[$sync{$arch}{count}++] = $_;
+    }
+    close(T);
+}
+
+foreach $arch (sort @archs) {
+    foreach $synctop (sort @sync_bases) {
+        for($n = 0; $n < $sync{$arch}{count}; $n++) {
+            $sdir = "$master_dir/$arch/$synctop/$sync{$arch}{dir}[$n]";
+            $tpdir = "$sync_target/$arch/$synctop/$sync{$arch}{dir}[$n]";
+            # Use parent of targetdir as rsync target
+            $tpdir =~ s|/[^/]*$||;
+            if ($synctop eq 'modules/all') {
+                $tpdir =~ s|/[^/]*$||;
+                $sdir =~ s|/[^/]*$||;
+            }
+            while (! -d $tpdir) {
+                $tpdir =~ s|/[^/]*$||;
+                $sdir =~ s|/[^/]*$||;
+            }
+            if (! defined $done{$sdir}) {
+                print "$rsync_cmd -a --delete $sdir $tpdir/.\n";
+                $done{$sdir}++;
+                # rsync the parent dir itself too
+                $tpdir =~ s|/[^/]*$||;
+                $sdir =~ s|/[^/]*$||;
+                print "$rsync_cmd -ptgod $sdir $tpdir/.\n";
+            }
+        }
+    }
+    if (-d "$arch/ebfiles_repo") {
+        print "$rsync_cmd -ac --delete $master_dir/$arch/ebfiles_repo $sync_target/$arch/.\n";
+    }
+    if (-d "$arch/software/lmod") {
+        print "$rsync_cmd -ac --delete $master_dir/$arch/software/lmod $sync_target/$arch/software/.\n";
+    }
+}
+foreach $d (sort @others) {
+    print "$rsync_cmd -ac --delete $master_dir/$d $sync_target/.\n";
+}
+
+print "mv $sync_target/.last_transaction.started $sync_target/.last_transaction\n";
