@@ -1,0 +1,42 @@
+#!/bin/bash
+#SBATCH -A easybuild
+#SBATCH -J EB-install
+#SBATCH -t 2:00:00
+#SBATCH -n 4
+#SBATCH --constraint=skylake
+
+# Should be used as
+# env EB_INSTALL_PARAMS="--robot --rebuild" EB_INSTALL_PKG="pomkl-2018b.eb" sbatch ~easybuild/sub
+# If EB_CMD is set it will run that instead of "eb", would normally be used to run real_eb instead.
+# If EB_BRANCH is set it will change the eb_builder module version from "default", typically "develop"
+#
+
+ml purge > /dev/null 2>&1
+ml eb_builder/${EB_BRANCH:-default}
+
+if [ "x$EB_BRANCH" = "xdevelop" ]; then
+    if [ -z "$EBUSER" ]; then
+        echo "EBUSER MUST be set when using eb_builder/develop"
+        exit 1
+    fi
+fi
+
+export SBATCH_CONSTRAINT=skylake
+export SBATCH_ACCOUNT=$SLURM_JOB_ACCOUNT
+
+p=`pwd`
+#bp="--buildpath=$p/$SLURM_JOB_ID"
+tl="--tmp-logdir=$p/tmplogs/$SLURM_JOB_ID"
+td="--tmpdir=$p/tmpdir/$SLURM_JOB_ID"
+
+if [ -z "$EB_CMD" ]; then
+    EB_CMD=eb
+fi
+
+if [ -z "$EB_INSTALL_PKG" ]; then
+    echo Forcing spider cache update
+    eb
+else
+    echo $EB_CMD $EB_INSTALL_PKG $EB_INSTALL_PARAMS $bp $tl $td
+    $EB_CMD $EB_INSTALL_PKG $EB_INSTALL_PARAMS $bp $tl $td
+fi
