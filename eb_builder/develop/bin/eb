@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ -z "$EBUSER" ]; then
+    echo "ERROR: Must set EBUSER before using eb_builder/develop"
+    exit 1
+fi
+
+c=`echo $PWD | cut -d/ -f1,2`
+if [ "$c" = "/hpc2n" ]; then
+    echo "Having /hpc2n/* as working dir when starting the singularity container will cause trouble due to bind mounts"
+    echo "Bailing out"
+    exit 1
+fi
+
+# Find latest installed version of nvidia-xxx if any
+# Needed for the NVML libraries, later resolving is done through /etc/ld.so.conf
+d=`find /usr/lib -maxdepth 1 -name nvidia-\* | grep -v 'nvidia-.*-'`
+if [ -n "$d" ]; then
+    l=`readlink -f /etc/ld.so.conf.d/x86_64-linux-gnu_GL.conf`
+    nvidia="-B $d -B $l:/etc/ld.so.conf.d/x86_64-linux-gnu_GL.conf -B /etc/ld.so.cache"
+    l=`readlink -f /usr/lib/x86_64-linux-gnu/libcuda.so.1`
+    cuda="-B /usr/lib/x86_64-linux-gnu/libcuda.so.1 -B /usr/lib/x86_64-linux-gnu/libcuda.so -B $l"
+else
+    nvidia=""
+    cuda=""
+fi
+
+singularity run -B /hpc2n -B /run/munge -B /etc/slurm -B /lap/slurm -B /usr/local/bin $nvidia $cuda -B /import/ebswbuild/master:/cvmfs/ebsw.hpc2n.umu.se /pfs/nobackup/data/containers/easybuild/xenial-eb-base-autobuild.simg "$@"

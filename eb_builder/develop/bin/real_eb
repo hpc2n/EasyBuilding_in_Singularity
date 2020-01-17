@@ -1,0 +1,10 @@
+#!/bin/bash
+if [ -z "$EBROOTEASYBUILD" ]; then
+    echo "EasyBuild module is not loaded"
+    exit
+fi
+if [ ! -x $EBROOTEASYBUILD/easybuild-framework/eb ]; then
+    echo "Can't execute $EBROOTEASYBUILD/easybuild-framework/eb"
+    exit
+fi
+exec $EBROOTEASYBUILD/easybuild-framework/eb "$@" --disable-pre-create-installdir
