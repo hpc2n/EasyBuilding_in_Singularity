@@ -1,0 +1,57 @@
+Bootstrap: localimage
+From: initial-xenial.simg
+
+%help
+    Xenial image with packages required for building EasyBuild packages at HPC2N.
+
+%setup
+    # This is where we download our sources
+    mkdir -p ${SINGULARITY_ROOTFS}/pfs/software/hidden_sources
+    mkdir -p ${SINGULARITY_ROOTFS}/pfs/software/open_sources
+
+    # Top level EasyBuild prefix lives here
+    mkdir -p ${SINGULARITY_ROOTFS}/hpc2n
+
+    # XDG location for EasyBuilds config file
+    mkdir -p ${SINGULARITY_ROOTFS}/etc/easybuild.d
+    # Which we keep in our EasyBuild common git tree
+    ln -s /hpc2n/eb/easybuild.cfg ${SINGULARITY_ROOTFS}/etc/easybuild.d/easybuild.cfg
+
+    # Directory where we bind mount our Slurm builds
+    mkdir -p ${SINGULARITY_ROOTFS}/lap/slurm
+    grep slurm /etc/passwd >> ${SINGULARITY_ROOTFS}/etc/passwd
+    grep slurm /etc/group >> ${SINGULARITY_ROOTFS}/etc/group
+
+%environment
+    # Setup EasyBuild
+    export EASYBUILD_BUILDPATH=/scratch/eb-buildpath
+    export EASYBUILD_TMPDIR=/scratch/eb-tmpdir
+    export EASYBUILD_FILTER_DEPS=""
+
+%files
+    /etc/apt/trusted.gpg.d/hpc2n.gpg /etc/apt/trusted.gpg.d/
+    /etc/apt/trusted.gpg.d/mellanox.gpg /etc/apt/trusted.gpg.d/
+    /etc/apt/trusted.gpg.d/graphics-drivers.gpg /etc/apt/trusted.gpg.d/
+
+%post
+    mkdir -p /mirrors/ubuntu
+    apt-get update
+    apt-get -y install nfs-common
+    # Add our MOFED and Lustre repos
+    echo "deb file:///mirrors/ubuntu/hpc2n xenial-mellanox main" > /etc/apt/sources.list.d/xenial-mofed-lustre.list
+    echo "deb file:///mirrors/ubuntu/hpc2n xenial hpc2n" >> /etc/apt/sources.list.d/xenial-mofed-lustre.list
+
+    mount -o ro,nolock,hard,intr,nosuid faiserver:/export/mirrors/ubuntu /mirrors/ubuntu
+    apt-get update
+    # Slurm requires: libhwloc5, libevent-pthreads-2.0-5, libmunge (and so does OpenMPI)
+    # IB needs libibverbs-dev, libibumad-devel, libmlx5-1
+    # Lmod needs lua
+    # EasyBiuld needs python and a couple of other things
+    apt-get -y install git wget curl gcc g++ vim tcl lua5.2 lua-posix lua-filesystem lua-term make python python-setuptools bzip2 xz-utils libhwloc5 lustre-dev libevent-pthreads-2.0-5 libibverbs-dev libibumad-devel libmlx5-1 libsecret-1-dev libssl-dev libmunge-dev cpio unzip zip dpkg-dev groff-base strace tcsh rpm2cpio gawk libdb-dev
+    apt-get -y upgrade
+    umount /mirrors/ubuntu
+
+%runscript
+    # The script to run EasyBuild inside the container, kept outside the
+    # container for easier management
+    /bin/bash $HOME/bin/eb-build-and-update-spider-cache "$@"
