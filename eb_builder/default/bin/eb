@@ -20,4 +20,12 @@ else
     cuda=""
 fi
 
+# Bind mounts:
+#  /hpc2n: top level prefix with link to the correct architecture
+#  /run/munge: Munge socket
+#  /etc/slurm: Slurm configs
+#  /lap/slurm: Slurm installation(s)
+#  /usr/local/bin: is available in $PATH and contains links to srun etc. For some reason MPI didn't work well without this, both Impi and OpenMPI had problems without it)
+#  $nvidia and $cuda: See above, runtime driver libraries
+
 singularity run -B /hpc2n -B /run/munge -B /etc/slurm -B /lap/slurm -B /usr/local/bin $nvidia $cuda -B /import/ebswbuild/master:/cvmfs/ebsw.hpc2n.umu.se /pfs/nobackup/data/containers/easybuild/xenial-eb-base-autobuild.simg "$@"

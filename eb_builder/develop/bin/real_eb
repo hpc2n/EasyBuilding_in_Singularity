@@ -7,4 +7,7 @@ if [ ! -x $EBROOTEASYBUILD/easybuild-framework/eb ]; then
     echo "Can't execute $EBROOTEASYBUILD/easybuild-framework/eb"
     exit
 fi
+
+# Run the real eb outside the container. Useful for starting eb --job
+# runs or injecting checksums etc. I.e. non-build operation.
 exec $EBROOTEASYBUILD/easybuild-framework/eb "$@" --disable-pre-create-installdir

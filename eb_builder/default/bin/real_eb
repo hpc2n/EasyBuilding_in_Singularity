@@ -7,4 +7,7 @@ if [ ! -x $EBROOTEASYBUILD/bin/eb ]; then
     echo "Can't execute $EBROOTEASYBUILD/bin/eb"
     exit
 fi
+
+# Run the real eb outside the container. Useful for starting eb --job
+# runs or injecting checksums etc. I.e. non-build operation.
 exec $EBROOTEASYBUILD/bin/eb "$@" --disable-pre-create-installdir
