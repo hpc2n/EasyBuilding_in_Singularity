@@ -5,12 +5,12 @@ This module provides a small wrapper script for EasyBuild for building using
 singularity container on the cvmfs master tree.
 ]])
 
-local root = "/hpc2n/eb/software/Core/eb_builder/develop"
+local root = "/hpc2n/eb/software/eb_builder/develop"
 
 conflict("eb_builder")
 
 if os.getenv("EBUSER") == nil or os.getenv("EBUSER") == "" then
-    LmodError("EBUSER must be set before loading eb_builder/default\n")
+    LmodError("EBUSER must be set before loading eb_builder/develop\n")
 else
 
     devel_path=pathJoin(os.getenv("HOME"), os.getenv("EBUSER"), "eb-develop", "modules")
@@ -22,6 +22,10 @@ else
 
     if not isloaded("EasyBuild-develop") then
         load("EasyBuild-develop")
+    end
+
+    if not isloaded("singularity") then
+        load("singularity")
     end
 
     prepend_path("PATH", pathJoin(root, "bin"))
