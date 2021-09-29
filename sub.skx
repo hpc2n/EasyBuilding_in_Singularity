@@ -1,15 +1,10 @@
 #!/bin/bash
 #SBATCH -A easybuild
 #SBATCH -J EB-install
-#SBATCH -t 2:00:00
+#SBATCH -t 6:00:00
+#SBATCH -N 1
 #SBATCH -n 4
 #SBATCH --constraint=skylake
-
-# Should be used as
-# env EB_INSTALL_PARAMS="--robot --rebuild" EB_INSTALL_PKG="pomkl-2018b.eb" sbatch ~easybuild/sub
-# If EB_CMD is set it will run that instead of "eb", would normally be used to run real_eb instead.
-# If EB_BRANCH is set it will change the eb_builder module version from "default", typically "develop"
-#
 
 ml purge > /dev/null 2>&1
 ml eb_builder/${EB_BRANCH:-default}
@@ -20,6 +15,12 @@ if [ "x$EB_BRANCH" = "xdevelop" ]; then
         exit 1
     fi
 fi
+
+# Should probably be used as
+# env EB_INSTALL_PARAMS="--robot --rebuild" EB_INSTALL_PKG="pomkl-2018b.eb" sbatch ~easybuild/sub
+# If EB_CMD is set it will run that instead of "eb", would normally be used to run real_eb instead.
+# If EB_BRANCH is set it will change the eb_builder module version from "default", typically "develop"
+#
 
 export SBATCH_CONSTRAINT=skylake
 export SBATCH_ACCOUNT=$SLURM_JOB_ACCOUNT
