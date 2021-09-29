@@ -11,13 +11,39 @@ else
     saved_eb_version=""
 fi
 
-. /hpc2n/eb/software/lmod/lmod/init/profile
+# Setup Lmod
+if [ -f /hpc2n/eb/software/lmod/lmod/init/bash ]; then
+    if [ -z "$_LMOD_INITIALIZED" ]; then
+        type module > /dev/null 2>&1
+        if [ "$?" -eq 0 ]; then
+            # Purge all modules and completely remove old Lmod setup
+            clearLmod --quiet >/dev/null 2>&1
+        fi
+        # guard variable is crucial, to avoid breaking existing modules settings
+        export _LMOD_INITIALIZED=1
+        # Initial ModulePath
+        export MODULEPATH=/hpc2n/eb/modules/all/Core:/hpc2n/eb/software/lmod/lmod/modulefiles/Core
+        # Point to the new definition of Lmod
+        export BASH_ENV=/hpc2n/eb/software/lmod/lmod/init/bash
+        source $BASH_ENV
+        # Initial system modules
+        export LMOD_SYSTEM_DEFAULT_MODULES=snicenvironment:systemdefault
+        # If we just do "restore" it will load users .lmod.d/default module
+        # collection, not sure we want to do that so using "restore system" here
+        module --initial_load --no_redirect restore system
+    else
+        source $BASH_ENV
+        module refresh
+    fi
+else
+    echo "Bailing out, no lmod init file found"
+    exit 1
+fi
 
-module use /hpc2n/eb/modules/all/Core
 module purge > /dev/null 2>&1
 if [ "$saved_eb_version" = "/develop" ]; then
     if [ -z "$EBUSER" ]; then
-        echo "ERROR: Muset set EBUSER before using the /develop version"
+        echo "ERROR: Must set EBUSER before using the /develop version"
         exit 1
     fi
     module use $HOME/${EBUSER}/eb-develop/modules
@@ -50,6 +76,7 @@ fi
 
 if [ $ret -eq 0 ]; then
     module purge > /dev/null 2>&1
+    MODULEPATH=/hpc2n/eb/modules/all/Core:/hpc2n/eb/modules/all/Linux:/hpc2n/eb/software/lmod/lmod/modulefiles/Core
     module --ignore_cache add lmod
     ret=1
     cnt=0
