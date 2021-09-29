@@ -1,0 +1,50 @@
+Bootstrap: localimage
+From: initial-focal.simg
+
+%help
+    Basic focal image for building EasyBuild packages at HPC2N.
+
+%setup
+    grep slurm /etc/passwd >> ${SINGULARITY_ROOTFS}/etc/passwd
+    grep slurm /etc/group >> ${SINGULARITY_ROOTFS}/etc/group
+
+    #mkdir -p ${SINGULARITY_ROOTFS}/etc/hpc2n/git-keys
+    #cp easybuild_common ${SINGULARITY_ROOTFS}/etc/hpc2n/git-keys
+
+    mkdir -p ${SINGULARITY_ROOTFS}/hpc2n
+    # Use bind mount of /hpc2n to get the correct link
+    #ln -s /cvmfs/ebsw.hpc2n.umu.se/amd64_ubuntu1604_knl ${SINGULARITY_ROOTFS}/hpc2n/eb
+
+    mkdir -p ${SINGULARITY_ROOTFS}/etc/easybuild.d
+    ln -s /hpc2n/eb/easybuild.cfg ${SINGULARITY_ROOTFS}/etc/easybuild.d/easybuild.cfg
+
+    mkdir -p ${SINGULARITY_ROOTFS}/lap/slurm
+
+%environment
+    # Setup EasyBuild
+    export EASYBUILD_BUILDPATH=/scratch/eb-buildpath
+    export EASYBUILD_TMPDIR=/scratch/eb-tmpdir
+    export EASYBUILD_FILTER_DEPS=""
+
+%files
+    /etc/apt/trusted.gpg.d/hpc2n.gpg /etc/apt/trusted.gpg.d/
+    /etc/apt/trusted.gpg.d/mellanox.gpg /etc/apt/trusted.gpg.d/
+    /etc/apt/trusted.gpg.d/graphics-drivers.gpg /etc/apt/trusted.gpg.d/
+
+%post
+    mkdir -p /mirrors/ubuntu
+    apt-get update
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install nfs-common
+    # Add our MOFED and Lustre repos
+    echo "deb file:///mirrors/ubuntu/hpc2n focal-mellanox main" > /etc/apt/sources.list.d/focal-mofed-lustre.list
+    echo "deb file:///mirrors/ubuntu/hpc2n focal-lustre client" >> /etc/apt/sources.list.d/focal-mofed-lustre.list
+    #echo "deb file:///mirrors/ubuntu/hpc2n focal hpc2n" >> /etc/apt/sources.list.d/focal-mofed-lustre.list
+
+    mount -o ro,nolock,hard,intr,nosuid faiserver:/export/mirrors/ubuntu /mirrors/ubuntu
+    apt-get update
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
+    # IB needs libibverbs-dev, libibumad-dev, librdmacm-dev and others
+    # openssh-client is needed to make openmpi not fail since plm_rsh_agent
+    # is looking for it and failing hard if it isn't there.
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install git wget curl ca-certificates gcc g++ libc6-dev vim tcl lua5.3 lua-posix lua-filesystem lua-term make python3 bzip2 xz-utils lustre-dev libibverbs-dev libibumad-dev librdmacm-dev libibmad-dev libdapl-dev libsecret-1-dev libssl-dev libmunge-dev cpio unzip zip dpkg-dev groff-base strace tcsh rpm2cpio gawk libdb-dev libfreetype6 p7zip-full rsync openssh-client file
+    umount /mirrors/ubuntu

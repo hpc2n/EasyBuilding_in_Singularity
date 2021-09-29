@@ -1,0 +1,12 @@
+Bootstrap: localimage
+From: focal-eb-base-small.simg
+
+%help
+    focal image for boostrapping/installing Lmod at HPC2N
+
+%post
+    mount -o ro,nolock,hard,intr,nosuid faiserver:/export/mirrors/ubuntu /mirrors/ubuntu
+    apt-get update
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install tcl-dev liblua5.3-dev python3-pip
+    umount /mirrors/ubuntu

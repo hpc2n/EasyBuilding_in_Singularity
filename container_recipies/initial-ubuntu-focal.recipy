@@ -1,0 +1,17 @@
+Bootstrap: debootstrap
+
+OSVersion: focal
+
+MirrorURL:  http://se.archive.ubuntu.com/ubuntu/
+
+Include: language-pack-en
+
+%setup
+    sed -i 's/ main$/& restricted universe multiverse/' ${SINGULARITY_ROOTFS}/etc/apt/sources.list
+    mkdir -p ${SINGULARITY_ROOTFS}/etc/apt/sources.list.d
+    sed 's/focal/&-updates/' ${SINGULARITY_ROOTFS}/etc/apt/sources.list > ${SINGULARITY_ROOTFS}/etc/apt/sources.list.d/focal-updates-security.list
+    sed 's/focal/&-security/' ${SINGULARITY_ROOTFS}/etc/apt/sources.list >> ${SINGULARITY_ROOTFS}/etc/apt/sources.list.d/focal-updates-security.list
+
+%post
+    apt-get update
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
