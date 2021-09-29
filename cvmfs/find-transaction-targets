@@ -32,9 +32,10 @@ if (! -e "$sync_target/.last_transaction.started") {
 }
 
 foreach $arch (@archs) {
-    open(T, "find $arch/modules/all -newer $sync_target/.last_transaction -type f -name *.lua|");
+    open(T, "find $arch/modules/all -newer $sync_target/.last_transaction -type f \\( -name *.lua -o -name .*.lua \\)|");
     while (<T>) {
         chomp;
+        $sync{$arch}{module}[$sync{$arch}{count}] = $_;
         s|$arch/modules/all/||g;
         s|\.lua$||;
         $sync{$arch}{dir}[$sync{$arch}{count}++] = $_;
@@ -45,8 +46,20 @@ foreach $arch (@archs) {
 foreach $arch (sort @archs) {
     foreach $synctop (sort @sync_bases) {
         for($n = 0; $n < $sync{$arch}{count}; $n++) {
-            $sdir = "$master_dir/$arch/$synctop/$sync{$arch}{dir}[$n]";
-            $tpdir = "$sync_target/$arch/$synctop/$sync{$arch}{dir}[$n]";
+            my $dir = $sync{$arch}{dir}[$n];
+            if ($synctop eq 'software') {
+                open(T, "$master_dir/$sync{$arch}{module}[$n]");
+                while(<T>) {
+                    chomp;
+                    next unless /^local root = "\/hpc2n\/eb\/software\//;
+                    s#^local root = "/hpc2n/eb/software/(.*)"$#$1#;
+                    $dir = $_;
+                    last;
+                }
+                close(T);
+            }
+            $sdir = "$master_dir/$arch/$synctop/$dir";
+            $tpdir = "$sync_target/$arch/$synctop/$dir";
             # Use parent of targetdir as rsync target
             $tpdir =~ s|/[^/]*$||;
             if ($synctop eq 'modules/all') {
@@ -58,12 +71,14 @@ foreach $arch (sort @archs) {
                 $sdir =~ s|/[^/]*$||;
             }
             if (! defined $done{$sdir}) {
-                print "$rsync_cmd -a --delete $sdir $tpdir/.\n";
                 $done{$sdir}++;
-                # rsync the parent dir itself too
-                $tpdir =~ s|/[^/]*$||;
-                $sdir =~ s|/[^/]*$||;
-                print "$rsync_cmd -ptgod $sdir $tpdir/.\n";
+                if (-d $sdir) {
+                    print "$rsync_cmd -a --delete $sdir $tpdir/.\n";
+                    # rsync the parent dir itself too
+                    $tpdir =~ s|/[^/]*$||;
+                    $sdir =~ s|/[^/]*$||;
+                    print "$rsync_cmd -ptgod $sdir $tpdir/.\n";
+                }
             }
         }
     }
