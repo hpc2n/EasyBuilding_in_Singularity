@@ -8,12 +8,8 @@ From: initial-focal.simg
     grep slurm /etc/passwd >> ${SINGULARITY_ROOTFS}/etc/passwd
     grep slurm /etc/group >> ${SINGULARITY_ROOTFS}/etc/group
 
-    #mkdir -p ${SINGULARITY_ROOTFS}/etc/hpc2n/git-keys
-    #cp easybuild_common ${SINGULARITY_ROOTFS}/etc/hpc2n/git-keys
-
     mkdir -p ${SINGULARITY_ROOTFS}/hpc2n
     # Use bind mount of /hpc2n to get the correct link
-    #ln -s /cvmfs/ebsw.hpc2n.umu.se/amd64_ubuntu1604_knl ${SINGULARITY_ROOTFS}/hpc2n/eb
 
     mkdir -p ${SINGULARITY_ROOTFS}/etc/easybuild.d
     ln -s /hpc2n/eb/easybuild.cfg ${SINGULARITY_ROOTFS}/etc/easybuild.d/easybuild.cfg
