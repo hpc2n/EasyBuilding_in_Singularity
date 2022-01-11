@@ -42,5 +42,5 @@ From: initial-focal.simg
     # IB needs libibverbs-dev, libibumad-dev, librdmacm-dev and others
     # openssh-client is needed to make openmpi not fail since plm_rsh_agent
     # is looking for it and failing hard if it isn't there.
-    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install git wget curl ca-certificates gcc g++ libc6-dev vim tcl lua5.3 lua-posix lua-filesystem lua-term make python3 bzip2 xz-utils lustre-dev libibverbs-dev libibumad-dev librdmacm-dev libibmad-dev libdapl-dev libsecret-1-dev libssl-dev libmunge-dev cpio unzip zip dpkg-dev groff-base strace tcsh rpm2cpio gawk libdb-dev libfreetype6 p7zip-full rsync openssh-client file
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install git wget curl ca-certificates gcc g++ libc6-dev vim tcl lua5.3 lua-posix lua-filesystem lua-term make python3 bzip2 xz-utils lustre-dev libibverbs-dev libibumad-dev librdmacm-dev libibmad-dev libdapl-dev libsecret-1-dev libssl-dev libmunge-dev cpio unzip zip dpkg-dev groff-base strace tcsh rpm2cpio gawk libdb-dev libfreetype6 p7zip-full rsync openssh-client file nfs4-acl-tools
     umount /mirrors/ubuntu
