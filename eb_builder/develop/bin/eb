@@ -7,11 +7,19 @@ if [ "$c" = "/hpc2n" ]; then
     exit 1
 fi
 
+nvcard=$(lspci | grep -i nvidia | grep -Ei 'vga|3D controller')
+if [ -n "$nvcard" ]; then
+    nv=--nv
+    if [ -d /etc/OpenCL ]; then
+        opencl="-B /etc/OpenCL"
+    fi
+fi
+
 # Find nvidia libs
-nvidia=$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name libnvidia-\* | sed 's/^/-B /')
+#nvidia=$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name libnvidia-\* | sed 's/^/-B /')
 
 # Find cuda libs
-cuda=$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name libcuda\* | sed 's/^/-B /')
+#cuda=$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name libcuda\* | sed 's/^/-B /')
 
 # Find Slurm related things
 munge=$(find /run -maxdepth 1 -name munge | sed 's/^/-B /')
@@ -35,4 +43,4 @@ else
     system_setuptools=""
 fi
 
-singularity run -B /hpc2n $munge $etc_slurm $lap_slurm -B /usr/local/bin $nvidia $cuda -B /import/ebswbuild/master:/cvmfs/ebsw.hpc2n.umu.se /pfs/data/containers/easybuild/focal-eb-base-autobuild$bash_as_sh$system_setuptools.simg "$@"
+singularity run $nv $opencl -B /hpc2n $munge $etc_slurm $lap_slurm -B /usr/local/bin -B /import/ebswbuild/master:/cvmfs/ebsw.hpc2n.umu.se /pfs/data/containers/easybuild/focal-eb-base-autobuild$bash_as_sh$system_setuptools.simg "$@"
