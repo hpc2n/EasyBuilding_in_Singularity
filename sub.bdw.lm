@@ -3,8 +3,9 @@
 #SBATCH -J EB-install
 #SBATCH -t 6:00:00
 #SBATCH -N 1
-#SBATCH -n 4
-#SBATCH --constraint=skylake
+#SBATCH -n 18
+#SBATCH -p largemem
+#SBATCH --constraint=broadwell
 
 ml purge > /dev/null 2>&1
 ml eb_builder/${EB_BRANCH:-default}
@@ -22,8 +23,9 @@ fi
 # If EB_BRANCH is set it will change the eb_builder module version from "default", typically "develop"
 #
 
-export SBATCH_CONSTRAINT=skylake
-export SBATCH_ACCOUNT=$SLURM_JOB_ACCOUNT
+export SBATCH_CONSTRAINT=broadwell
+export SBATCH_ACCOUNT=easybuild
+export SBATCH_PARTITION=$SLURM_JOB_PARTITION
 
 p=`pwd`
 #bp="--buildpath=$p/$SLURM_JOB_ID"
