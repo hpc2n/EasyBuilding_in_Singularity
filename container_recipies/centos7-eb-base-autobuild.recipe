@@ -1,0 +1,16 @@
+Bootstrap: localimage
+From: centos7-eb-base-small.sif
+
+%help
+    centos7 image for auto building EasyBuild packages at HPC2N.
+
+%runscript
+    /bin/bash $HOME/bin/eb-build-and-update-spider-cache "$@"
+
+%post
+    yum check-updates || true
+    yum -y upgrade
+
+    # bc needed to build LAMMPS (kokkos)
+    # Installing older VTune requires: libgtk-3-0 libxss1 kmod xserver-xorg
+    yum -y install dejavu-sans-fonts dejavu-sans-mono-fonts dejavu-serif-fonts python36-keyring python36-gitdb python36-distro acl bc patch

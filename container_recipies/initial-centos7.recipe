@@ -1,0 +1,14 @@
+Bootstrap: yum
+OSVersion: 7
+MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearch/
+Include: yum
+
+%setup
+    mkdir -p ${APPTAINER_ROOTFS}/mirrors/rhel
+
+%post
+    # check-updates exits with 100 when there are packages to update
+    # avoid it failing the initial build
+    yum check-update || true
+    yum -y upgrade
+    yum -y install epel-release

@@ -1,0 +1,20 @@
+Bootstrap: localimage
+From: centos7-eb-base-small.sif
+
+%help
+    centos 7 image for boostrapping/installing Lmod at HPC2N
+
+#%files
+    #/pfs/data/containers/apptainer/easybuild/eb.sysconfig.patch /
+
+%post
+    yum check-updates || true
+    yum -y upgrade
+
+    yum -y install tcl-devel lua-devel python3-pip
+
+    # Fix idiotic change by debian/ubuntu on what install scheme to use by default.
+    # with this patch we can set DEB_PYTHON_INSTALL_LAYOUT=eb to get back to what it should be.
+    #patch /usr/lib/python3.10/sysconfig.py /eb.sysconfig.patch
+
+    #rm -f /eb.sysconfig.patch

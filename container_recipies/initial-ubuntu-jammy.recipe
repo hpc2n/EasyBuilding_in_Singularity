@@ -1,6 +1,6 @@
 Bootstrap: debootstrap
 
-OSVersion: focal
+OSVersion: jammy
 
 MirrorURL:  http://se.archive.ubuntu.com/ubuntu/
 
@@ -9,8 +9,8 @@ Include: language-pack-en
 %setup
     sed -i 's/ main$/& restricted universe multiverse/' ${APPTAINER_ROOTFS}/etc/apt/sources.list
     mkdir -p ${APPTAINER_ROOTFS}/etc/apt/sources.list.d
-    sed 's/focal/&-updates/' ${APPTAINER_ROOTFS}/etc/apt/sources.list > ${APPTAINER_ROOTFS}/etc/apt/sources.list.d/focal-updates-security.list
-    sed 's/focal/&-security/' ${APPTAINER_ROOTFS}/etc/apt/sources.list >> ${APPTAINER_ROOTFS}/etc/apt/sources.list.d/focal-updates-security.list
+    sed 's/jammy/&-updates/' ${APPTAINER_ROOTFS}/etc/apt/sources.list > ${APPTAINER_ROOTFS}/etc/apt/sources.list.d/jammy-updates-security.list
+    sed 's/jammy/&-security/' ${APPTAINER_ROOTFS}/etc/apt/sources.list >> ${APPTAINER_ROOTFS}/etc/apt/sources.list.d/jammy-updates-security.list
 
     mkdir -p ${APPTAINER_ROOTFS}/etc/apt/keyrings
     mkdir -p ${APPTAINER_ROOTFS}/mirrors/ubuntu

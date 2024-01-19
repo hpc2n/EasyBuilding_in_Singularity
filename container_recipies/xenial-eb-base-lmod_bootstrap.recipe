@@ -1,0 +1,12 @@
+Bootstrap: localimage
+From: xenial-eb-base-small.simg
+
+%help
+    xenial image for boostrapping/installing Lmod at HPC2N
+
+%post
+    mount -o ro,nolock,hard,intr,nosuid faiserver:/export/mirrors/ubuntu /mirrors/ubuntu
+    apt-get update
+    apt-get -y install tcl-dev liblua5.2-dev
+    apt-get -y upgrade
+    umount /mirrors/ubuntu

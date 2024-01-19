@@ -1,13 +1,14 @@
 Bootstrap: localimage
-From: initial-ubuntu-focal.sif
+From: initial-ubuntu-jammy.sif
 
 %help
-    Basic focal image for building EasyBuild packages at HPC2N.
+    Basic jammy image for building EasyBuild packages at HPC2N.
 
 %setup
     # Add some much needed passwd/group entries
     getent passwd slurm >> ${APPTAINER_ROOTFS}/etc/passwd
     getent group slurm >> ${APPTAINER_ROOTFS}/etc/group
+    # getent group sysop | cut -d: -f1-3 | sed 's/$/:/' >> ${APPTAINER_ROOTFS}/etc/group
 
     mkdir -p ${APPTAINER_ROOTFS}/hpc2n
     # We use bind mount of /hpc2n to get the correct link
@@ -27,8 +28,8 @@ From: initial-ubuntu-focal.sif
     apt-get update
     env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install nfs-common netbase
     # Add our MOFED and Lustre repos
-    echo "deb [signed-by=/etc/apt/keyrings/hpc2n.gpg]  file:///mirrors/ubuntu/hpc2n focal-mellanox main" > /etc/apt/sources.list.d/focal-mofed-lustre.list
-    echo "deb [signed-by=/etc/apt/keyrings/hpc2n.gpg]  file:///mirrors/ubuntu/hpc2n focal-lustre client" >> /etc/apt/sources.list.d/focal-mofed-lustre.list
+    echo "deb [signed-by=/etc/apt/keyrings/hpc2n.gpg]  file:///mirrors/ubuntu/hpc2n jammy-mellanox main" > /etc/apt/sources.list.d/jammy-mofed-lustre.list
+    echo "deb [signed-by=/etc/apt/keyrings/hpc2n.gpg]  file:///mirrors/ubuntu/hpc2n jammy-lustre client" >> /etc/apt/sources.list.d/jammy-mofed-lustre.list
 
     apt-get update
     env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade

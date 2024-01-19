@@ -1,5 +1,5 @@
 Bootstrap: localimage
-From: focal-eb-base-small.simg
+From: focal-eb-base-small.sif
 
 %help
     focal image for auto building EasyBuild packages at HPC2N.
@@ -8,14 +8,7 @@ From: focal-eb-base-small.simg
     /bin/bash $HOME/bin/eb-build-and-update-spider-cache "$@"
 
 %post
-    # nvidia drivers are bind-mounted in at runtime.
-    mount -o ro,nolock,hard,intr,nosuid faiserver:/export/mirrors/ubuntu /mirrors/ubuntu
     apt-get update
     env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
     # bc needed to build LAMMPS (kokkos)
     env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install fonts-dejavu-core python3-keyring python3-git python3-keyrings.alt python3-distro acl bc python3-setuptools
-    umount /mirrors/ubuntu
-
-    # When installing something that requires /bin/sh -> /bin/bash
-    #rm -f /bin/sh
-    #ln -s bash /bin/sh

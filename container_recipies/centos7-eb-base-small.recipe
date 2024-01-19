@@ -1,0 +1,52 @@
+Bootstrap: localimage
+From: initial-centos7.sif
+
+%help
+    Basic centos 7 image for building EasyBuild packages at HPC2N.
+
+%setup
+    # Add some much needed passwd/group entries
+    getent passwd slurm >> ${APPTAINER_ROOTFS}/etc/passwd
+    getent group slurm >> ${APPTAINER_ROOTFS}/etc/group
+    # getent group sysop | cut -d: -f1-3 | sed 's/$/:/' >> ${APPTAINER_ROOTFS}/etc/group
+
+    mkdir -p ${APPTAINER_ROOTFS}/hpc2n
+    # We use bind mount of /hpc2n to get the correct link
+
+    mkdir -p ${APPTAINER_ROOTFS}/etc/easybuild.d
+    ln -s /hpc2n/eb/easybuild.cfg ${APPTAINER_ROOTFS}/etc/easybuild.d/easybuild.cfg
+
+    mkdir -p ${APPTAINER_ROOTFS}/lap/slurm
+
+%environment
+    # Setup EasyBuild
+    export EASYBUILD_BUILDPATH=/scratch/eb-buildpath
+    export EASYBUILD_TMPDIR=/scratch/eb-tmpdir
+    export EASYBUILD_FILTER_DEPS=""
+
+%post
+    yum check-updates || true
+    yum -y install nfs-utils
+
+    # Add our Lustre and MOFED repos
+    cat > /etc/yum.repos.d/HPC2N-lustre-client.repo << EOF
+[HPC2N-lustre-client]
+name=HPC2N RHEL/CentOS Lustre Client Repository
+baseurl=file:///mirrors/rhel/lustre-client/\$releasever/\$basearch
+enabled = 1
+gpgcheck = 0
+EOF
+
+    cat > /etc/yum.repos.d/HPC2N-mellanox.repo << EOF
+[HPC2N-mellanox]
+name=HPC2N RHEL/CentOS Lustre Client Repository
+baseurl=file:///mirrors/rhel/mellanox/\$releasever/\$basearch
+enabled = 1
+gpgcheck = 0
+EOF
+
+    yum -y upgrade
+
+    # openssh-client is needed to make openmpi not fail since plm_rsh_agent
+    # is looking for it and failing hard if it isn't there.
+    yum -y install git wget curl ca-certificates gcc gcc-c++ glibc-devel vim-enhanced tcl lua lua-posix lua-filesystem lua-term make python3 bzip2 xz lustre-client rdma-core-devel dapl-devel libsecret-devel openssl-dev munge-devel cpio unzip zip groff-base strace tcsh rpm gawk freetype p7zip rsync openssh-clients file nfs4-acl-tools 

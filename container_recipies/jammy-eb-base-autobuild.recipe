@@ -1,8 +1,8 @@
 Bootstrap: localimage
-From: focal-eb-base-small.sif
+From: jammy-eb-base-small.sif
 
 %help
-    focal image for auto building EasyBuild packages at HPC2N.
+    jammy image for auto building EasyBuild packages at HPC2N.
 
 %runscript
     /bin/bash $HOME/bin/eb-build-and-update-spider-cache "$@"
