@@ -73,11 +73,11 @@ foreach $arch (sort @archs) {
             if (! defined $done{$sdir}) {
                 $done{$sdir}++;
                 if (-d $sdir) {
-                    print "$rsync_cmd -a --delete $sdir $tpdir/.\n";
+                    print "$rsync_cmd -aA --delete $sdir $tpdir/.\n";
                     # rsync the parent dir itself too
                     $tpdir =~ s|/[^/]*$||;
                     $sdir =~ s|/[^/]*$||;
-                    print "$rsync_cmd -ptgod $sdir $tpdir/.\n";
+                    print "$rsync_cmd -ptgodA $sdir $tpdir/.\n";
                 }
             }
         }
