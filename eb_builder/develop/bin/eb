@@ -7,6 +7,19 @@ if [ "$c" = "/hpc2n" ]; then
     exit 1
 fi
 
+osid=$(grep '^ID=' /etc/os-release | cut -d= -f2 | sed 's/"//g')
+if [ -z "$osid" ]; then
+    echo "ERROR: Can't find osid in /etc/os-release"
+    exit 1
+fi
+if [ "$osid" = "ubuntu" ]; then
+    #codename=$(lsb_release -c | awk '{print $2}')
+    codename=$(grep '^UBUNTU_CODENAME=' /etc/os-release | cut -d= -f2 | sed 's/"//g')
+else
+    vid=$(grep ^'VERSION_ID=' /etc/os-release | cut -d= -f2 | sed 's/"//g')
+    codename="$osid$vid"
+fi
+
 nvcard=$(lspci | grep -i nvidia | grep -Ei 'vga|3D controller')
 if [ -n "$nvcard" ]; then
     nv=--nv
@@ -43,4 +56,12 @@ else
     system_setuptools=""
 fi
 
-singularity run $nv $opencl -B /hpc2n $munge $etc_slurm $lap_slurm -B /usr/local/bin -B /import/ebswbuild/master:/cvmfs/ebsw.hpc2n.umu.se /pfs/data/containers/easybuild/focal-eb-base-autobuild$bash_as_sh$system_setuptools.simg "$@"
+# Setup temp overlay, should normally not be needed but CUDA installer
+# tries to write in /var/log regardless of who is using it.
+ovl=/scratch/eb-tmpdir/overlay_$$
+mkdir -p $ovl
+
+apptainer run $nv $opencl -B /hpc2n $munge $etc_slurm $lap_slurm -B /usr/local/bin -B /import/ebswbuild/master:/cvmfs/ebsw.hpc2n.umu.se --userns --overlay $ovl /pfs/data/containers/apptainer/easybuild/images/${codename}-eb-base-autobuild$bash_as_sh$system_setuptools.sif "$@"
+
+# Remove temp overlay
+rm -rf $ovl
