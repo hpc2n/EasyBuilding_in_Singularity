@@ -77,7 +77,9 @@ foreach $arch (sort @archs) {
                     # rsync the parent dir itself too
                     $tpdir =~ s|/[^/]*$||;
                     $sdir =~ s|/[^/]*$||;
-                    print "$rsync_cmd -ptgodA $sdir $tpdir/.\n";
+                    if ($tpdir ne '/cvmfs') {
+                        print "$rsync_cmd -ptgodA $sdir $tpdir/.\n";
+                    }
                 }
             }
         }
