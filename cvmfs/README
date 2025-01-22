@@ -1,0 +1,9 @@
+How to make a transaction (i.e. how to publish what's been newly built)
+
+Login to cvmfs-stratum0 as easybuild
+===
+cvmfs_server transaction ebsw.hpc2n.umu.se
+~/bin/find-transaction-targets > /tmp/rsync.sh
+sh -x /tmp/rsync.sh
+cvmfs_server publish ebsw.hpc2n.umu.se
+===
