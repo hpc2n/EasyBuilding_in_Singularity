@@ -25,6 +25,9 @@ fi
 
 export SBATCH_PARTITION=knl
 export SBATCH_ACCOUNT=$SLURM_JOB_ACCOUNT
+if [ -n "$SLURM_GPUS_PER_NODE" ]; then
+    export SBATCH_GPUS_PER_NODE=$SLURM_GPUS_PER_NODE
+fi
 
 p=`pwd`
 #bp="--buildpath=$p/$SLURM_JOB_ID"

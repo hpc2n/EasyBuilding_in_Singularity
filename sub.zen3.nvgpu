@@ -6,7 +6,7 @@
 #SBATCH -n 24
 #SBATCH --constraint=zen3&2xA100
 #SBATCH -p amd_gpu
-#SBATCH --gres=gpu:a100:1
+#SBATCH --gpus-per-node=a100:1
 
 ml purge > /dev/null 2>&1
 ml eb_builder/${EB_BRANCH:-default}
@@ -25,8 +25,11 @@ fi
 #
 
 export SBATCH_CONSTRAINT="zen3&2xA100"
-export SBATCH_ACCOUNT=$SLURM_JOB_ACCOUNT
+export SBATCH_ACCOUNT=${SLURM_JOB_ACCOUNT%-gpu}
 export SBATCH_PARTITION=$SLURM_JOB_PARTITION
+if [ -n "$SLURM_GPUS_PER_NODE" ]; then
+    export SBATCH_GPUS_PER_NODE=$SLURM_GPUS_PER_NODE
+fi
 
 p=`pwd`
 #bp="--buildpath=$p/$SLURM_JOB_ID"
