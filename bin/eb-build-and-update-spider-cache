@@ -66,6 +66,8 @@ PATH=$PATH:/lap/slurm/bin
 #fi
 #export PKG_PATH_CONFIG
 
+job_found=$(expr match "$*" ".*--job")
+
 if [ -n "$*" ]; then
     $ebcmd "$@"
     ret=$?
@@ -74,7 +76,9 @@ else
     ret=0
 fi
 
-if [ $ret -eq 0 ]; then
+# Skip spider cache building if --job was used
+# Each subjob sill create the cache anyway
+if [ $ret -eq 0 -a $job_found -eq 0 ]; then
     module purge > /dev/null 2>&1
     MODULEPATH=/hpc2n/eb/modules/all/Core:/hpc2n/eb/modules/all/Linux:/hpc2n/eb/software/lmod/lmod/modulefiles/Core
     module --ignore_cache add lmod
