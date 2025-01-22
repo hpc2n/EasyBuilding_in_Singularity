@@ -1,0 +1,26 @@
+Bootstrap: localimage
+From: noble-eb-base-small.sif
+
+%help
+    noble image for auto building EasyBuild packages at HPC2N.
+
+%files
+    /pfs/data/containers/apptainer/easybuild/eb.sysconfig.patch /
+
+%runscript
+    /bin/bash $HOME/bin/eb-build-and-update-spider-cache "$@"
+
+%environment
+    export DEB_PYTHON_INSTALL_LAYOUT=eb
+
+%post
+    apt-get update
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
+    # bc needed to build LAMMPS (kokkos)
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install fonts-dejavu-core python3-keyring python3-git python3-keyrings.alt python3-distro acl bc python3-setuptools python3-pip
+
+    # Fix idiotic change by debian/ubuntu on what install scheme to use by default.
+    # with this patch we can set DEB_PYTHON_INSTALL_LAYOUT=eb to get back to what it should be.
+    patch /usr/lib/python3.12/sysconfig.py /eb.sysconfig.patch
+
+    rm -f /eb.sysconfig.patch

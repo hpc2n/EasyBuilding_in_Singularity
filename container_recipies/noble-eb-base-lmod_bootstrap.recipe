@@ -1,0 +1,19 @@
+Bootstrap: localimage
+From: noble-eb-base-small.sif
+
+%help
+    noble image for boostrapping/installing Lmod at HPC2N
+
+%files
+    /pfs/data/containers/apptainer/easybuild/eb.sysconfig.patch /
+
+%post
+    apt-get update
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install tcl-dev liblua5.3-dev python3-pip bc
+
+    # Fix idiotic change by debian/ubuntu on what install scheme to use by default.
+    # with this patch we can set DEB_PYTHON_INSTALL_LAYOUT=eb to get back to what it should be.
+    patch /usr/lib/python3.12/sysconfig.py /eb.sysconfig.patch
+
+    rm -f /eb.sysconfig.patch

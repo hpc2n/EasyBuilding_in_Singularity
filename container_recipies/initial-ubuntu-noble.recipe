@@ -1,0 +1,23 @@
+Bootstrap: debootstrap
+
+OSVersion: noble
+
+MirrorURL:  http://se.archive.ubuntu.com/ubuntu/
+
+Include: language-pack-en
+
+%setup
+    sed -i 's/ main$/& restricted universe multiverse/' ${APPTAINER_ROOTFS}/etc/apt/sources.list
+    mkdir -p ${APPTAINER_ROOTFS}/etc/apt/sources.list.d
+    sed 's/noble/&-updates/' ${APPTAINER_ROOTFS}/etc/apt/sources.list > ${APPTAINER_ROOTFS}/etc/apt/sources.list.d/noble-updates-security.list
+    sed 's/noble/&-security/' ${APPTAINER_ROOTFS}/etc/apt/sources.list >> ${APPTAINER_ROOTFS}/etc/apt/sources.list.d/noble-updates-security.list
+
+    mkdir -p ${APPTAINER_ROOTFS}/etc/apt/keyrings
+    mkdir -p ${APPTAINER_ROOTFS}/mirrors/ubuntu
+
+%files
+    /etc/apt/keyrings/hpc2n.gpg /etc/apt/keyrings/
+
+%post
+    apt-get update
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade

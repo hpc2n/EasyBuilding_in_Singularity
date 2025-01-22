@@ -1,0 +1,14 @@
+Patch container OS python to get back the old installation schema on Ubuntu 22.04.
+
+Åke Sandgren, 2023-03-23
+--- sysconfig.py.orig	2023-03-23 14:21:00.847094550 +0100
++++ sysconfig.py	2023-03-23 14:22:10.179311784 +0100
+@@ -270,6 +270,8 @@
+         deb_build = os.environ.get('DEB_PYTHON_INSTALL_LAYOUT', 'posix_local')
+         if deb_build in ('deb', 'deb_system'):
+             prefix_scheme = 'deb_system'
++        elif deb_build in ('eb'):
++            prefix_scheme = 'posix_prefix'
+         else:
+             prefix_scheme = 'posix_local'
+ 

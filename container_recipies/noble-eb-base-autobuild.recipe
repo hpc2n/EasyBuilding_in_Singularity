@@ -1,0 +1,15 @@
+Bootstrap: localimage
+From: noble-eb-base-small.sif
+
+%help
+    noble image for auto building EasyBuild packages at HPC2N.
+
+%runscript
+    /bin/bash $HOME/bin/eb-build-and-update-spider-cache "$@"
+
+%post
+    apt-get update
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
+    # bc needed to build LAMMPS (kokkos)
+    # Installing older VTune requires: libgtk-3-0 libxss1 kmod xserver-xorg
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install fonts-dejavu-core python3-keyring python3-git python3-keyrings.alt python3-distro python3-setuptools acl bc kmod

@@ -1,0 +1,19 @@
+Bootstrap: localimage
+From: noble-eb-base-small.sif
+
+%help
+    noble image for auto building EasyBuild packages at HPC2N.
+
+%runscript
+    /bin/bash $HOME/bin/eb-build-and-update-spider-cache "$@"
+
+%post
+    apt-get update
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
+    # bc needed to build LAMMPS (kokkos)
+    # net-tools may be needed for ANSYS < 2020R2
+    env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install fonts-dejavu-core python3-keyring python3-git python3-keyrings.alt python3-distro python3-setuptools acl bc 
+
+    # When installing something that requires /bin/sh -> /bin/bash
+    rm -f /bin/sh
+    ln -s bash /bin/sh

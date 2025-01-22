@@ -1,8 +1,8 @@
 Bootstrap: localimage
-From: initial-ubuntu-jammy.sif
+From: initial-ubuntu-noble.sif
 
 %help
-    Basic jammy image for building EasyBuild packages at HPC2N.
+    Basic noble image for building EasyBuild packages at HPC2N.
 
 %setup
     # Add some much needed passwd/group entries
@@ -28,8 +28,8 @@ From: initial-ubuntu-jammy.sif
     apt-get update
     env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install nfs-common netbase
     # Add our MOFED and Lustre repos
-    echo "deb [signed-by=/etc/apt/keyrings/hpc2n.gpg]  file:///mirrors/ubuntu/hpc2n jammy-mellanox main" > /etc/apt/sources.list.d/jammy-mofed-lustre.list
-    echo "deb [signed-by=/etc/apt/keyrings/hpc2n.gpg]  file:///mirrors/ubuntu/hpc2n jammy-lustre client" >> /etc/apt/sources.list.d/jammy-mofed-lustre.list
+    echo "deb [signed-by=/etc/apt/keyrings/hpc2n.gpg]  file:///mirrors/ubuntu/hpc2n noble-mellanox main" > /etc/apt/sources.list.d/noble-mofed-lustre.list
+    echo "deb [signed-by=/etc/apt/keyrings/hpc2n.gpg]  file:///mirrors/ubuntu/hpc2n noble-lustre client" >> /etc/apt/sources.list.d/noble-mofed-lustre.list
 
     apt-get update
     env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
